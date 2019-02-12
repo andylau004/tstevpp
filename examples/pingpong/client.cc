@@ -1,5 +1,10 @@
 // Modified from https://github.com/chenshuo/muduo/blob/master/examples/pingpong/client.cc
 
+#include <vector>
+#include <thread>
+#include <mutex>
+#include <atomic>
+
 #include "evpp/buffer.h"
 
 //#include "evpp/tcp_client.h"
@@ -7,6 +12,10 @@
 //#include "evpp/tcp_conn.h"
 
 #include "evpp/server_status.h"
+#include "evpp/fd_channel.h"
+
+#include <event2/event.h>
+#include <event2/event_struct.h>
 
 
 //class Client;
@@ -166,6 +175,112 @@
 //}
 
 
+
+class CTestThread {
+public:
+    typedef std::function < int() > Functor;
+
+    CTestThread();
+    ~CTestThread();
+public:
+    bool Start(Functor pfnpre, Functor pfnpost = Functor());
+    void Join();
+private:
+    void Run(const Functor& pre, const Functor& post);
+
+private:
+    std::shared_ptr<std::thread> thread_; // Guard by mutex_
+
+};
+
+CTestThread::CTestThread() {
+
+}
+CTestThread::~CTestThread() {
+
+}
+bool CTestThread::Start(Functor pfnpre, Functor pfnpost) {
+    assert(thread_.get() == nullptr);
+    thread_.reset( new std::thread(std::bind(&CTestThread::Run, this, pfnpre, pfnpost)) );
+
+    if (pfnpre == nullptr) {
+        LOG_WARN << "pfn pre is null" ;
+    }
+    if (pfnpost == nullptr) {
+        LOG_WARN << "pfn post is null" ;
+    }
+    sleep(1);
+    return true;
+}
+void CTestThread::Run(const Functor& pre, const Functor& post) {
+//    if (name_.empty())
+    {
+        std::ostringstream os;
+        os << "thread-" << std::this_thread::get_id();
+        DLOG_TRACE << " Run : " << os.str();
+//        name_ = os.str();
+    }
+    LOG_INFO << "tid=" << std::this_thread::get_id() << " execute pre functor.";
+    auto fn = [this, pre]() {
+        if (pre) {
+            int iret = pre();
+            LOG_INFO << "tid=" << std::this_thread::get_id() << " pre call, iret=" << iret;
+        } else {
+            LOG_INFO << "tid=" << std::this_thread::get_id() << " pre is null return ";
+        }
+    };
+    fn();
+    if (post) {
+        LOG_INFO << "tid=" << std::this_thread::get_id() << " before post, post="/* << post->get()*/;
+        post();
+        LOG_INFO << "tid=" << std::this_thread::get_id() << " after post";
+    }
+}
+
+
+void tstRun(const CTestThread::Functor& pre, const CTestThread::Functor& post) {
+    LOG_INFO << "tid=" << std::this_thread::get_id() << " execute pre functor.";
+//    auto fn = [pre]() {
+        if (pre) {
+            int iret = pre();
+            LOG_INFO << "tid=" << std::this_thread::get_id() << " pre call, iret=" << iret;
+        } else {
+            LOG_INFO << "tid=" << std::this_thread::get_id() << " pre is null return ";
+        }
+//    };
+//    fn();
+    if (post) {
+        LOG_INFO << "tid=" << std::this_thread::get_id() << " before post";
+        post();
+        LOG_INFO << "tid=" << std::this_thread::get_id() << " after post";
+    } else {
+        LOG_INFO << "tid=" << std::this_thread::get_id() << " post is null return ";
+    }
+}
+
+void tst_2() {
+//    std::shared_ptr<CTestThread> sp_obj;
+//    sp_obj.reset(new CTestThread);
+
+    std::shared_ptr<std::atomic<uint32_t>> started_count(new std::atomic<uint32_t>(0));
+    std::shared_ptr<std::atomic<uint32_t>> exited_count(new std::atomic<uint32_t>(0));
+    LOG_INFO << "tid=" << std::this_thread::get_id() << " started_count.use_count=" << started_count.use_count();
+    LOG_INFO << "tid=" << std::this_thread::get_id() << " exited_count.use_count="  << exited_count.use_count();
+
+    auto prepfn = [&started_count]() {
+        LOG_INFO << "tid=" << std::this_thread::get_id() << ", prepfn start working..." << " started_count.use_count=" << started_count.use_count();
+        return 1;
+    };
+    auto postpfn = [&exited_count]() {
+        LOG_INFO << "tid=" << std::this_thread::get_id() << ", postpfn start working..." << " exited_count.use_count=" << exited_count.use_count();
+        return 1;
+    };//LOG_INFO << "tst_2   tid=" << std::this_thread::get_id();
+
+    tstRun( prepfn, postpfn );
+//    sp_obj->Start(prepfn, postpfn);
+//    getchar();
+}
+
 void tst_1() {
     LOG_INFO << "maithread";
     evpp::ServerStatus ctss;
@@ -177,6 +292,11 @@ void tst_1() {
 
 int main(int argc, char* argv[]) {
 
+    LOG_INFO << "sizeof(struct event)=" << sizeof(struct event);
+    LOG_INFO << "sizeof(event)=" << sizeof(event);
+    return 1;
+
+    tst_2(); return 1;
     tst_1(); return 1;
 
 //    if (argc != 7) {

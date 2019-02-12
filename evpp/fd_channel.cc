@@ -47,6 +47,7 @@ void FdChannel::AttachToLoop() {
         // So doing this can avoid event_add will be called more than once.
         DetachFromLoop();
     }
+
     assert(!attached_);
     ::event_set(event_, fd_, events_ | EV_PERSIST, &FdChannel::HandleEvent, this);
     ::event_base_set(loop_->event_base(), event_);
