@@ -201,8 +201,11 @@ void EventLoop::RunInLoop(const Functor &functor) {
 }
 void EventLoop::RunInLoop(Functor&& functor) {
     if (IsRunning() && IsInLoopThread()) {
+        DLOG_TRACE << " in loop thread";
         functor();
     } else {
+        DLOG_TRACE << " not in loop thread" << ", IsRunning()=" << IsRunning()
+                  << ", tid_=" << tid_ << ", this_thread=" << std::this_thread::get_id();
         QueueInLoop(std::move(functor));
     }
 }
@@ -305,12 +308,12 @@ void EventLoop::DoPendingFunctors() {
         pending_functors_->swap(functors);
         DLOG_TRACE << "pending_functor_count_=" << pending_functor_count_ << " PendingQueueSize=" << GetPendingQueueSize() << " notified_=" << notified_.load();
     }
-    DLOG_TRACE << "pending_functor_count_=" << pending_functor_count_ << " PendingQueueSize=" << GetPendingQueueSize() << " notified_=" << notified_.load();
+//    DLOG_TRACE << "pending_functor_count_=" << pending_functor_count_ << " PendingQueueSize=" << GetPendingQueueSize() << " notified_=" << notified_.load();
     for (size_t i = 0; i < functors.size(); ++i) {
         functors[i]();
         --pending_functor_count_;
     }
-    DLOG_TRACE << "pending_functor_count_=" << pending_functor_count_ << " PendingQueueSize=" << GetPendingQueueSize() << " notified_=" << notified_.load();
+//    DLOG_TRACE << "pending_functor_count_=" << pending_functor_count_ << " PendingQueueSize=" << GetPendingQueueSize() << " notified_=" << notified_.load();
 #endif
 }
 

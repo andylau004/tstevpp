@@ -248,7 +248,6 @@ std::string ToIP(const struct sockaddr* s) {
     } else {
         LOG_ERROR << "unknown socket family connected";
     }
-
     return empty_string;
 }
 

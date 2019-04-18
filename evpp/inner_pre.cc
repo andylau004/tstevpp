@@ -28,7 +28,7 @@ struct OnStartup {
             LOG_ERROR << "SIGPIPE set failed.";
             exit(-1);
         }
-        LOG_INFO << "ignore SIGPIPE";
+        LOG_INFO << "ignore SIGPIPE successed!!!";
 #endif
     }
     ~OnStartup() {

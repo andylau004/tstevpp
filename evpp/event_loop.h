@@ -115,10 +115,10 @@ private:
 
 private:
     struct event_base* evbase_;
-    bool create_evbase_myself_;
-    std::thread::id tid_;
+    bool               create_evbase_myself_;
+    std::thread::id    tid_;
     enum { kContextCount = 16, };
-    Any context_[kContextCount];
+    Any                context_[kContextCount];
 
     std::mutex mutex_;
     // We use this to notify the thread when we put a task into the pending_functors_ queue
@@ -126,6 +126,7 @@ private:
     // When we put a task into the pending_functors_ queue,
     // we need to notify the thread to execute it. But we don't want to notify repeatedly.
     std::atomic<bool> notified_;
+
 #ifdef H_HAVE_BOOST
     boost::lockfree::queue<Functor*>* pending_functors_;
 #elif defined(H_HAVE_CAMERON314_CONCURRENTQUEUE)

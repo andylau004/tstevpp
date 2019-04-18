@@ -21,7 +21,6 @@ EventLoopThreadPool::~EventLoopThreadPool() {
     threads_.clear();
 }
 
-
 bool EventLoopThreadPool::Start(bool wait_thread_started) {
     status_.store(kStarting);
     DLOG_TRACE << "thread_num=" << thread_num() << " base loop=" << base_loop_ << " wait_thread_started=" << wait_thread_started;

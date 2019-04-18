@@ -60,7 +60,7 @@ public:
     // It does nothing if n is greater than the length of the buffer.
     void Truncate(size_t n) {
         if (n == 0) {
-            read_index_ = reserved_prepend_size_;
+            read_index_  = reserved_prepend_size_;
             write_index_ = reserved_prepend_size_;
         } else if (write_index_ > read_index_ + n) {
             write_index_ = read_index_ + n;

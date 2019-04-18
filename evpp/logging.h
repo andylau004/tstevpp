@@ -2,6 +2,8 @@
 
 #include "evpp/platform_config.h"
 
+#include <thread>
+
 #ifdef __cplusplus
 #define GOOGLE_GLOG_DLL_DECL           // 使用静态glog库时，必须定义这个
 #define GLOG_NO_ABBREVIATED_SEVERITIES // 没这个编译会出错,传说因为和Windows.h冲突
@@ -14,7 +16,8 @@
 #define LOG_TRACE LOG(INFO)
 #define LOG_DEBUG LOG(INFO)
 //#define LOG_INFO  LOG(INFO)
-#define DLOG_TRACE LOG(INFO) << __PRETTY_FUNCTION__ << " this=" << this << " "
+//#define DLOG_TRACE LOG(INFO) << "tid=" << std::this_thread::get_id() << " " << __PRETTY_FUNCTION__ << " this=" << this << " "
+#define DLOG_TRACE LOG(INFO) /*<< "tid=" << std::this_thread::get_id()*/ << " " << __PRETTY_FUNCTION__  << " "
 #else
 #define LOG_TRACE if (false) LOG(INFO)
 #define LOG_DEBUG if (false) LOG(INFO)

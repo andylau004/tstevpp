@@ -49,7 +49,8 @@ void FdChannel::AttachToLoop() {
     }
 
     assert(!attached_);
-    ::event_set(event_, fd_, events_ | EV_PERSIST, &FdChannel::HandleEvent, this);
+    ::event_set(event_, fd_, events_ | EV_PERSIST,
+                &FdChannel::HandleEvent, this);
     ::event_base_set(loop_->event_base(), event_);
 
     if (event_add(event_, nullptr) == 0) {

@@ -17,7 +17,8 @@ EventLoopThread::EventLoopThread()
 
 EventLoopThread::~EventLoopThread() {
     DLOG_TRACE << "loop=" << event_loop_;
-
+    assert(IsStopped());
+    Join();
 }
 
 bool EventLoopThread::Start(bool wait_thread_started, Functor pre, Functor post) {
@@ -32,6 +33,7 @@ bool EventLoopThread::Start(bool wait_thread_started, Functor pre, Functor post)
             usleep(1);
         }
     }
+    return true;
 }
 
 void EventLoopThread::Run(const Functor& pre, const Functor& post) {
@@ -47,6 +49,7 @@ void EventLoopThread::Run(const Functor& pre, const Functor& post) {
         if (pre) {
             int iret = pre();
             if (iret != kOK) {
+                DLOG_TRACE << " iret != kOK, iret=" << iret << ", will be Stop";
                 event_loop_->Stop();
             }
         }
